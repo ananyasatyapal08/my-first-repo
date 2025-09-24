@@ -1,0 +1,31 @@
+version: "3.8"
+services:
+  postgres:
+    image: kartoza/postgis:15.3
+    environment:
+      - POSTGRES_DB=floatchat
+      - POSTGRES_USER=floatchat
+      - POSTGRES_PASSWORD=floatchat_password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: ./backend
+    depends_on:
+      - postgres
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://floatchat:floatchat_password@postgres:5432/floatchat
+      - CHROMA_DB_DIR=/data/chroma
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    volumes:
+      - ./floatchat/oceangpt:/app/frontend
+      - ./backend:/app
+      - ./data:/data
+    ports:
+      - "8000:8000"
+
+volumes:
+  pgdata:
